@@ -1,16 +1,31 @@
 package main
 
-import "github.com/jinzhu/gorm"
+import (
+  "github.com/jinzhu/gorm"
+  _ "github.com/jinzhu/gorm/dialects/mysql"
+)
 
-type db gorm.DB
-
-func NewDBServer() *Server {
-	return new(Server)
+type DBSession struct{
+  DB *gorm.DB
 }
 
-func (d *db) VoteForCandidate(v Vote) error {
+func NewDBSession() *DBSession{
+  DBMS     := "mysql"
+  USER     := "root"
+  PASS     := ""
+  PROTOCOL := ""
+  DBNAME   := "test"
+  CONNECT := USER+":"+PASS+"@"+PROTOCOL+"/"+DBNAME
+  session,err := gorm.Open(DBMS, CONNECT)
+  if err != nil {
+    panic(err)
+  }
+  return  &DBSession{DB:session}
+}
+
+func (d *DBSession) VoteForCandidate(v Vote) error {
 	return nil
 }
-func (d *db) Result() []Vote {
-	return nil
+func (d *DBSession) Result() ([]Vote,error) {
+	return nil ,nil
 }

@@ -1,12 +1,18 @@
- package main
+package main
 
+import (
+)
 
-type Client struct{
-
+type BlockchainSession struct{
 }
-func (c *Client) VoteForCandidate(v Vote) err {
 
+func NewBlockchainSession() *BlockchainSession{
+  return new(BlockchainSession)
 }
-func (c *Client) Result() []Vote {
+
+func (b *BlockchainSession) VoteForCandidate(v Vote) error {
 	return nil
+}
+func (b *BlockchainSession) Result() ([]Vote,error) {
+	return nil ,nil
 }
