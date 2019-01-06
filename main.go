@@ -1,9 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"github.com/gorilla/mux"
-  "net/http"
-  "encoding/json"
+	"net/http"
 )
 
 type Vote struct {
@@ -11,12 +11,12 @@ type Vote struct {
 	CandidateID uint
 }
 
-type Server struct{
+type Server struct {
 	Store
 }
 
 type Store interface {
-  VoteForCandidate(Vote) error
+	VoteForCandidate(Vote) error
 	Result() ([]Vote, error)
 }
 
@@ -25,12 +25,12 @@ func (s *Server) VoteForCandidateHandler(w http.ResponseWriter, r *http.Request)
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&vote); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
- return
+		return
 	}
 	// anything to db
 	if err := s.VoteForCandidate(*vote); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
- return
+		return
 	}
 	w.WriteHeader(http.StatusCreated)
 }
@@ -39,12 +39,12 @@ func (s *Server) ResultHandler(w http.ResponseWriter, r *http.Request) {
 	votes, err := s.Result()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-    return
+		return
 	}
 	res, err := json.Marshal(votes)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
- return
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
@@ -55,9 +55,9 @@ func main() {
 	databaseServer := Server{
 		NewDBSession(),
 	}
-  blockchainServer := Server{
-    NewBlockchainSession(),
-  }
+	blockchainServer := Server{
+		NewBlockchainSession(),
+	}
 	r := mux.NewRouter()
 	r.HandleFunc("/db/vote", databaseServer.VoteForCandidateHandler).Methods("POST")
 	r.HandleFunc("/db/result", databaseServer.VoteForCandidateHandler).Methods("GET")
