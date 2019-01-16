@@ -6,6 +6,9 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/ryomak/tsukemen/web/model"
+	"encoding/json"
+	"strconv"
+	"time"
 	"os"
 	"fmt"
 )
@@ -36,10 +39,10 @@ func NewBlockchainSession() *BlockchainSession {
 
 		// Channel parameters
 		ChannelID:     "chainhero",
-		ChannelConfig: os.Getenv("GOPATH") + "/src/github.com/chainHero/heroes-service/fixtures/artifacts/chainhero.channel.tx",
+		ChannelConfig: os.Getenv("GOPATH") + "/src/github.com/ryomak/fixtures/artifacts/chainhero.channel.tx",
 
 		// Chaincode parameters
-		ChainCodeID:     "heroes-service",
+		ChainCodeID:     "tsukemen",
 		ChaincodeGoPath: os.Getenv("GOPATH"),
 		ChaincodePath:   "github.com/ryomak/tsukemen/web/blockchain/chaincode/",
 		OrgAdmin:        "Admin",
@@ -65,22 +68,54 @@ func NewBlockchainSession() *BlockchainSession {
 	}
 	return &session
 }
+var number = 0
 
 func (b *BlockchainSession) VoteForCandidate(v model.Vote) error {
+	number++
+	function := "createVote"
+	var args []string
+	args = append(args, "user"+strconv.Itoa(number))
+	args = append(args, v.User)
+	args = append(args, strconv.Itoa(v.CandidateID))
+
+	eventID := "voteForInvoke"
+
+	// Add data that will be visible in the proposal, like a description of the invoke request
+	transientDataMap := make(map[string][]byte)
+	transientDataMap["result"] = []byte("invoke vote")
+
+	reg, notifier, err := b.event.RegisterChaincodeEvent(b.ChainCodeID, eventID)
+	if err != nil {
+		return err
+	}
+	defer b.event.Unregister(reg)
+	response, err := b.client.Execute(channel.Request{ChaincodeID: b.ChainCodeID, Fcn: function, Args: [][]byte{[]byte(args[1]), []byte(args[2]), []byte(args[2])}, TransientMap: transientDataMap})
+	if err != nil {
+		return fmt.Errorf("failed to move funds: %v", err)
+	}
+		// Wait for the result of the submission
+	select {
+	case ccEvent := <-notifier:
+		fmt.Printf("Received CC event: %v\n", ccEvent)
+	case <-time.After(time.Second * 20):
+		return fmt.Errorf("did NOT receive CC event for eventId(%s)", eventID)
+	}
+	fmt.Println(response)
 	return nil
 }
 func (b *BlockchainSession) Result() ([]model.Vote, error) {
 	// Prepare arguments
-	var args []string
-	args = append(args, "invoke")
-	args = append(args, "query")
-	args = append(args, "hello")
-
-	response, err := b.client.Query(channel.Request{ChaincodeID: b.ChainCodeID, Fcn: args[0], Args: [][]byte{[]byte(args[1]), []byte(args[2])}})
+	function := "queryAllVotes"
+	response, err := b.client.Query(channel.Request{ChaincodeID: b.ChainCodeID, Fcn: function, Args: [][]byte{}})
 	if err != nil {
 		return nil, fmt.Errorf("failed to query: %v", err)
 	}
-  fmt.Println(response.Payload)
+	var v []model.Vote
+    if err := json.Unmarshal(response.Payload, &v); err != nil {
+        return nil ,err
+    }
+    fmt.Print("result:")
+  	fmt.Println(response.Payload)
 	//return string(response.Payload), nil
-	return nil, nil
+	return v, nil
 }

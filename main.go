@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
+	"fmt"
 	"github.com/ryomak/tsukemen/web/blockchain"
 	"github.com/ryomak/tsukemen/web/db"
 	"github.com/ryomak/tsukemen/web/model"
@@ -58,9 +59,13 @@ func main() {
 		blockchain.NewBlockchainSession(),
 	}
 	r := mux.NewRouter()
+	r.HandleFunc("/hello",func(w http.ResponseWriter, r *http.Request) {
+		  fmt.Fprintf(w, "Hello, World")
+	})
 	r.HandleFunc("/db/vote", databaseServer.VoteForCandidateHandler).Methods("POST")
 	r.HandleFunc("/db/result", databaseServer.VoteForCandidateHandler).Methods("GET")
 	r.HandleFunc("/blockchain/vote", blockchainServer.VoteForCandidateHandler).Methods("POST")
 	r.HandleFunc("/blockchain/result", blockchainServer.VoteForCandidateHandler).Methods("GET")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("run server port:8080")
+	http.ListenAndServe(":8080", r)
 }
