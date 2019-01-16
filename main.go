@@ -4,24 +4,23 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
+  "github.com/ryomak/tsukemen/blockchain"
+  "github.com/ryomak/tsukemen/db"
+  "github.com/ryomak/tsukemen/model"
 )
 
-type Vote struct {
-	ID          uint
-	CandidateID uint
-}
 
 type Server struct {
 	Store
 }
 
 type Store interface {
-	VoteForCandidate(Vote) error
-	Result() ([]Vote, error)
+	VoteForCandidate(model.Vote) error
+	Result() ([]model.Vote, error)
 }
 
 func (s *Server) VoteForCandidateHandler(w http.ResponseWriter, r *http.Request) {
-	vote := new(Vote)
+	vote := new(model.Vote)
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&vote); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -53,10 +52,10 @@ func (s *Server) ResultHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	databaseServer := Server{
-		NewDBSession(),
+		db.NewDBSession(),
 	}
 	blockchainServer := Server{
-		NewBlockchainSession(),
+		blockchain.NewBlockchainSession(),
 	}
 	r := mux.NewRouter()
 	r.HandleFunc("/db/vote", databaseServer.VoteForCandidateHandler).Methods("POST")
