@@ -4,9 +4,17 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/ryomak/tsukemen/web/model"
 	"strconv"
+	"encoding/json"
+	"bytes"
 )
+
+//same as 	"github.com/ryomak/tsukemen/web/model"
+type Vote struct {
+	User        string
+	CandidateID int
+}
+
 
 // HeroesServiceChaincode implementation of Chaincode
 type VoteChainCode struct {
@@ -15,7 +23,7 @@ type VoteChainCode struct {
 // Init of the chaincode
 // This function is called only one when the chaincode is instantiated.
 // So the goal is to prepare the ledger to handle future requests.
-func (t *VoteChainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
+func (v *VoteChainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("########### HeroesServiceChaincode Init ###########")
 
 	// Get the function and arguments from the request
@@ -31,47 +39,47 @@ func (t *VoteChainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 
 // Invoke
 // All future requests named invoke will arrive here.
-func (t *VoteChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
+func (v *VoteChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("########### HeroesServiceChaincode Invoke ###########")
 
 	// Get the function and arguments from the request
 	function, args := stub.GetFunctionAndParameters()
 
 	if function == "queryVote" {
-		return s.queryVote(APIstub, args)
+		return v.queryVote(stub, args)
 	} else if function == "initVotes" {
-		return s.initVotes(APIstub)
+		return v.initVotes(stub)
 	} else if function == "createVote" {
-		return s.createVote(APIstub, args)
+		return v.createVote(stub, args)
 	} else if function == "queryAllVotes" {
-		return s.queryAllVotes(APIstub)
+		return v.queryAllVotes(stub)
 	} else if function == "changeVote" {
-		return s.changeVote(APIstub, args)
+		return v.changeVote(stub, args)
 	}
 	// If the arguments given don’t match any function, we return an error
 	return shim.Error("Invalid Smart Contract function name")
 }
 
-func (t *VoteChainCode) queryVote(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+func (v *VoteChainCode) queryVote(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 1 {
 		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
 
-	voteAsBytes, _ := APIstub.GetState(args[0])
+	voteAsBytes, _ := stub.GetState(args[0])
 	return shim.Success(voteAsBytes)
 }
 
-func (s *SmartContract) initVotes(APIstub shim.ChaincodeStubInterface) sc.Response {
-	votes := []model.Vote{
-		model.Vote{User:"user0",CandidateID:0},
+func (v *VoteChainCode) initVotes(stub shim.ChaincodeStubInterface) pb.Response {
+	votes := []Vote{
+		Vote{User:"user0",CandidateID:0},
 	}
 
 	i := 0
 	for i < len(votes) {
 		fmt.Println("i is ", i)
 		voteAsBytes, _ := json.Marshal(votes[i])
-		APIstub.PutState("Vote"+strconv.Itoa(i), voteAsBytes)
+		stub.PutState("Vote"+strconv.Itoa(i), voteAsBytes)
 		fmt.Println("Added", votes[i])
 		i = i + 1
 	}
@@ -79,15 +87,15 @@ func (s *SmartContract) initVotes(APIstub shim.ChaincodeStubInterface) sc.Respon
 	return shim.Success(nil)
 }
 
-func (s *SmartContract) createVote(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+func (v *VoteChainCode) createVote(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
-	vote := model.Vote{User:args[1],CandidateID:strconv.Itoa(args[2])}
+	id ,_:= strconv.Atoi(args[2])
+	vote := Vote{User:args[1],CandidateID:id}
 	voteAsBytes, _ := json.Marshal(vote)
-	err := stub.PutState(args[0], [voteAsBytes)
-
+	err := stub.PutState(args[0], voteAsBytes)
 	if err != nil {
 		return shim.Error("Failed to update state of hello")
 	}
@@ -101,12 +109,12 @@ func (s *SmartContract) createVote(APIstub shim.ChaincodeStubInterface, args []s
 	return shim.Success(nil)
 }
 
-func (s *SmartContract) queryAllVotes(APIstub shim.ChaincodeStubInterface) sc.Response {
+func (v *VoteChainCode) queryAllVotes(stub shim.ChaincodeStubInterface) pb.Response {
 
 	startKey := "Vote0"
 	endKey := "Vote99999"
 
-	resultsIterator, err := APIstub.GetStateByRange(startKey, endKey)
+	resultsIterator, err := stub.GetStateByRange(startKey, endKey)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -144,20 +152,21 @@ func (s *SmartContract) queryAllVotes(APIstub shim.ChaincodeStubInterface) sc.Re
 	return shim.Success(buffer.Bytes())
 }
 
-func (s *SmartContract) changeVote(APIstub shim.ChaincodeStubInterface, args []string) sc.Response {
+func (v *VoteChainCode) changeVote(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	if len(args) != 2 {
 		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
 
-	voteAsBytes, _ := APIstub.GetState(args[0])
-	vote := model.Vote{}
+	voteAsBytes, _ := stub.GetState(args[0])
+	vote := Vote{}
 
-	json.Unmarshal(carAsBytes, &vote)
-	vote.CandidateID = args[1]
+	json.Unmarshal(voteAsBytes, &vote)
+	id ,_ := strconv.Atoi(args[1])
+	vote.CandidateID = id
 
 	voteAsBytes, _ = json.Marshal(vote)
-	APIstub.PutState(args[0], voteAsBytes)
+	stub.PutState(args[0], voteAsBytes)
 
 	return shim.Success(nil)
 }

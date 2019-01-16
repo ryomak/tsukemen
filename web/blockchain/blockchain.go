@@ -74,7 +74,7 @@ func (b *BlockchainSession) VoteForCandidate(v model.Vote) error {
 	number++
 	function := "createVote"
 	var args []string
-	args = append(args, "user"+strconv.Itoa(number))
+	args = append(args, "Vote"+strconv.Itoa(number))
 	args = append(args, v.User)
 	args = append(args, strconv.Itoa(v.CandidateID))
 

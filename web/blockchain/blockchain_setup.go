@@ -109,7 +109,7 @@ func (setup *BlockchainSession) InstallAndInstantiateCC() error {
 	// Creation of the client which will enables access to our channel events
 	setup.event, err = event.New(clientContext)
 	if err != nil {
-    return err
+    	return err
 	}
 	fmt.Println("Event client created")
 
