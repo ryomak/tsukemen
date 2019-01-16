@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
-  "github.com/ryomak/tsukemen/blockchain"
-  "github.com/ryomak/tsukemen/db"
-  "github.com/ryomak/tsukemen/model"
+	"github.com/ryomak/tsukemen/web/blockchain"
+	"github.com/ryomak/tsukemen/web/db"
+	"github.com/ryomak/tsukemen/web/model"
 )
 
 
@@ -62,4 +62,5 @@ func main() {
 	r.HandleFunc("/db/result", databaseServer.VoteForCandidateHandler).Methods("GET")
 	r.HandleFunc("/blockchain/vote", blockchainServer.VoteForCandidateHandler).Methods("POST")
 	r.HandleFunc("/blockchain/result", blockchainServer.VoteForCandidateHandler).Methods("GET")
+	http.ListenAndServe(":8080", nil)
 }

@@ -5,9 +5,9 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/event"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
-  "github.com/ryomak/tsukemen/model"
-  "os"
-  "fmt"
+	"github.com/ryomak/tsukemen/web/model"
+	"os"
+	"fmt"
 )
 
 type BlockchainSession struct {
@@ -41,7 +41,7 @@ func NewBlockchainSession() *BlockchainSession {
 		// Chaincode parameters
 		ChainCodeID:     "heroes-service",
 		ChaincodeGoPath: os.Getenv("GOPATH"),
-		ChaincodePath:   "github.com/chainHero/heroes-service/chaincode/",
+		ChaincodePath:   "github.com/ryomak/tsukemen/web/blockchain/chaincode/",
 		OrgAdmin:        "Admin",
 		OrgName:         "org1",
 		ConfigFile:      "config.yaml",

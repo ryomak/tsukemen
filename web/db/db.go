@@ -3,7 +3,7 @@ package db
 import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-  "github.com/ryomak/tsukemen/model"
+  "github.com/ryomak/tsukemen/web/model"
 )
 
 type DBSession struct {

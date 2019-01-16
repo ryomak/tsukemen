@@ -1,7 +1,7 @@
-package main
+package blockchain
 
 import(
-  "fmt"
+	"fmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/event"
 	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
@@ -14,8 +14,8 @@ import(
 	"github.com/hyperledger/fabric-sdk-go/third_party/github.com/hyperledger/fabric/common/cauthdsl"
 	"errors"
 )
-func (setup *BlockchainSession) Initialize() error {
 
+func (setup *BlockchainSession) Initialize() error {
 	// Add parameters for the initialization
 	if setup.initialized {
 		return errors.New("sdk already initialized")
@@ -55,6 +55,7 @@ func (setup *BlockchainSession) Initialize() error {
 	req := resmgmt.SaveChannelRequest{ChannelID: setup.ChannelID, ChannelConfigPath: setup.ChannelConfig, SigningIdentities: []msp.SigningIdentity{adminIdentity}}
 	txID, err := setup.admin.SaveChannel(req, resmgmt.WithOrdererEndpoint(setup.OrdererID))
 	if err != nil || txID.TransactionID == "" {
+
     fmt.Println("rep")
     return err
 	}
