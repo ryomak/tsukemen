@@ -39,7 +39,7 @@ func NewBlockchainSession() *BlockchainSession {
 
 		// Channel parameters
 		ChannelID:     "chainhero",
-		ChannelConfig: os.Getenv("GOPATH") + "/src/github.com/ryomak/fixtures/artifacts/chainhero.channel.tx",
+		ChannelConfig: os.Getenv("GOPATH") + "/src/github.com/ryomak/tsukemen/fixtures/artifacts/chainhero.channel.tx",
 
 		// Chaincode parameters
 		ChainCodeID:     "tsukemen",
