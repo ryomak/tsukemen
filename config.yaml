@@ -174,7 +174,7 @@ organizations:
 #
 orderers:
   orderer.hf.chainhero.io:
-    url: 118.27.5.69:7050
+    url: localhost:7050
 
     # these are standard properties defined by the gRPC library
     # they will be passed in as-is to gRPC client constructor
@@ -200,9 +200,9 @@ orderers:
 peers:
   peer0.org1.hf.chainhero.io:
     # this URL is used to send endorsement and query requests
-    url: 118.27.5.69:7051
+    url: localhost:7051
     # eventUrl is only needed when using eventhub (default is delivery service)
-    eventUrl: 118.27.5.69:7053
+    eventUrl: localhost:7053
 
     grpcOptions:
       ssl-target-name-override: peer0.org1.hf.chainhero.io
@@ -222,9 +222,9 @@ peers:
 
   peer1.org1.hf.chainhero.io:
     # this URL is used to send endorsement and query requests
-    url: 118.27.5.69:8051
+    url: localhost:8051
     # eventUrl is only needed when using eventhub (default is delivery service)
-    eventUrl: 118.27.5.69:8053
+    eventUrl: localhost:8053
 
     grpcOptions:
       ssl-target-name-override: peer1.org1.hf.chainhero.io
@@ -249,7 +249,7 @@ peers:
 #
 certificateAuthorities:
   ca.org1.hf.chainhero.io:
-    url: http://118.27.5.69:7054
+    url: http://localhost:7054
     # Fabric-CA supports dynamic user enrollment via REST APIs. A "root" user, a.k.a registrar, is
     # needed to enroll and invoke new users.
     httpOptions:
@@ -266,24 +266,24 @@ certificateAuthorities:
 entityMatchers:
   peer:
     - pattern: (\w*)peer0.org1.hf.chainhero.io(\w*)
-      urlSubstitutionExp: 118.27.5.69:7051
-      eventUrlSubstitutionExp: 118.27.5.69:7053
+      urlSubstitutionExp: localhost:7051
+      eventUrlSubstitutionExp: localhost:7053
       sslTargetOverrideUrlSubstitutionExp: peer0.org1.hf.chainhero.io
       mappedHost: peer0.org1.hf.chainhero.io
 
     - pattern: (\w*)peer1.org1.hf.chainhero.io(\w*)
-      urlSubstitutionExp: 118.27.5.69:8051
-      eventUrlSubstitutionExp: 118.27.5.69:8053
+      urlSubstitutionExp: localhost:8051
+      eventUrlSubstitutionExp: localhost:8053
       sslTargetOverrideUrlSubstitutionExp: peer1.org1.hf.chainhero.io
       mappedHost: peer1.org1.hf.chainhero.io
 
   orderer:
     - pattern: (\w*)orderer.hf.chainhero.io(\w*)
-      urlSubstitutionExp: 118.27.5.69:7050
+      urlSubstitutionExp: localhost:7050
       sslTargetOverrideUrlSubstitutionExp: orderer.hf.chainhero.io
       mappedHost: orderer.hf.chainhero.io
 
   certificateAuthorities:
     - pattern: (\w*)ca.org1.hf.chainhero.io(\w*)
-      urlSubstitutionExp: http://118.27.5.69:7054
+      urlSubstitutionExp: http://localhost:7054
       mappedHost: ca.org1.hf.chainhero.io
