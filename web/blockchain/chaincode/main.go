@@ -1,20 +1,20 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"strconv"
-	"encoding/json"
-	"bytes"
 )
 
 //same as 	"github.com/ryomak/tsukemen/web/model"
 type Vote struct {
-	User        string
-	CandidateID int
+	User        string `json:"user"`
+	CandidateID int    `json:"candidate_id`
 }
-
 
 // HeroesServiceChaincode implementation of Chaincode
 type VoteChainCode struct {
@@ -33,8 +33,7 @@ func (v *VoteChainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	if function != "init" {
 		return shim.Error("Unknown function call")
 	}
-	// Return a successful message
-	return shim.Success(nil)
+	return v.initVotes(stub)
 }
 
 // Invoke
@@ -45,34 +44,20 @@ func (v *VoteChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	// Get the function and arguments from the request
 	function, args := stub.GetFunctionAndParameters()
 
-	if function == "queryVote" {
-		return v.queryVote(stub, args)
-	} else if function == "initVotes" {
+	if function == "initVotes" {
 		return v.initVotes(stub)
 	} else if function == "createVote" {
 		return v.createVote(stub, args)
 	} else if function == "queryAllVotes" {
 		return v.queryAllVotes(stub)
-	} else if function == "changeVote" {
-		return v.changeVote(stub, args)
 	}
 	// If the arguments given don’t match any function, we return an error
 	return shim.Error("Invalid Smart Contract function name")
 }
 
-func (v *VoteChainCode) queryVote(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
-	}
-
-	voteAsBytes, _ := stub.GetState(args[0])
-	return shim.Success(voteAsBytes)
-}
-
 func (v *VoteChainCode) initVotes(stub shim.ChaincodeStubInterface) pb.Response {
 	votes := []Vote{
-		Vote{User:"user0",CandidateID:0},
+		Vote{User: "user0", CandidateID: 0},
 	}
 
 	i := 0
@@ -92,8 +77,8 @@ func (v *VoteChainCode) createVote(stub shim.ChaincodeStubInterface, args []stri
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
-	id ,_:= strconv.Atoi(args[2])
-	vote := Vote{User:args[1],CandidateID:id}
+	id, _ := strconv.Atoi(args[2])
+	vote := Vote{User: args[1], CandidateID: id}
 	voteAsBytes, _ := json.Marshal(vote)
 	err := stub.PutState(args[0], voteAsBytes)
 	if err != nil {
@@ -105,14 +90,13 @@ func (v *VoteChainCode) createVote(stub shim.ChaincodeStubInterface, args []stri
 		return shim.Error(err.Error())
 	}
 
-	return shim.Success(nil)
+	return shim.Success(voteAsBytes)
 }
 
 func (v *VoteChainCode) queryAllVotes(stub shim.ChaincodeStubInterface) pb.Response {
 
-	startKey := "Vote0"
-	endKey := "Vote99999"
-
+	startKey := "Vote1"
+	endKey := "Vote999"
 	resultsIterator, err := stub.GetStateByRange(startKey, endKey)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -121,27 +105,18 @@ func (v *VoteChainCode) queryAllVotes(stub shim.ChaincodeStubInterface) pb.Respo
 
 	// buffer is a JSON array containing QueryResults
 	var buffer bytes.Buffer
-	buffer.WriteString("[")
 
 	bArrayMemberAlreadyWritten := false
+	buffer.WriteString("[")
 	for resultsIterator.HasNext() {
 		queryResponse, err := resultsIterator.Next()
 		if err != nil {
 			return shim.Error(err.Error())
 		}
-		// Add a comma before array members, suppress it for the first array member
 		if bArrayMemberAlreadyWritten == true {
 			buffer.WriteString(",")
 		}
-		buffer.WriteString("{\"Key\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.Key)
-		buffer.WriteString("\"")
-
-		buffer.WriteString(", \"Record\":")
-		// Record is a JSON object, so we write as-is
 		buffer.WriteString(string(queryResponse.Value))
-		buffer.WriteString("}")
 		bArrayMemberAlreadyWritten = true
 	}
 	buffer.WriteString("]")
@@ -150,26 +125,6 @@ func (v *VoteChainCode) queryAllVotes(stub shim.ChaincodeStubInterface) pb.Respo
 
 	return shim.Success(buffer.Bytes())
 }
-
-func (v *VoteChainCode) changeVote(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 2")
-	}
-
-	voteAsBytes, _ := stub.GetState(args[0])
-	vote := Vote{}
-
-	json.Unmarshal(voteAsBytes, &vote)
-	id ,_ := strconv.Atoi(args[1])
-	vote.CandidateID = id
-
-	voteAsBytes, _ = json.Marshal(vote)
-	stub.PutState(args[0], voteAsBytes)
-
-	return shim.Success(nil)
-}
-
 func main() {
 	// Start the chaincode and make it ready for futures requests
 	err := shim.Start(new(VoteChainCode))

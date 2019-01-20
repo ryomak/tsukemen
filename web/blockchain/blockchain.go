@@ -1,20 +1,21 @@
 package blockchain
 
 import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/event"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/resmgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/ryomak/tsukemen/web/model"
-	"encoding/json"
-	"strconv"
-	"time"
-	"os"
-	"fmt"
 )
 
 type BlockchainSession struct {
-  ConfigFile      string
+	ConfigFile      string
 	OrgID           string
 	OrdererID       string
 	ChannelID       string
@@ -33,7 +34,7 @@ type BlockchainSession struct {
 }
 
 func NewBlockchainSession() *BlockchainSession {
-    session := BlockchainSession{
+	session := BlockchainSession{
 		// Network parameters
 		OrdererID: "orderer.hf.chainhero.io",
 
@@ -52,22 +53,21 @@ func NewBlockchainSession() *BlockchainSession {
 		// User parameters
 		UserName: "User1",
 	}
-  err := session.Initialize()
+	err := session.Initialize()
 	if err != nil {
 		fmt.Printf("Unable to initialize the Fabric SDK: %v\n", err)
 		return nil
 	}
-	// Close SDK
-	defer session.CloseSDK()
 
 	// Install and instantiate the chaincode
 	err = session.InstallAndInstantiateCC()
 	if err != nil {
 		fmt.Printf("Unable to install and instantiate the chaincode: %v\n", err)
-		return  nil
+		return nil
 	}
 	return &session
 }
+
 var number = 0
 
 func (b *BlockchainSession) VoteForCandidate(v model.Vote) error {
@@ -93,7 +93,7 @@ func (b *BlockchainSession) VoteForCandidate(v model.Vote) error {
 	if err != nil {
 		return fmt.Errorf("failed to move funds: %v", err)
 	}
-		// Wait for the result of the submission
+	// Wait for the result of the submission
 	select {
 	case ccEvent := <-notifier:
 		fmt.Printf("Received CC event: %v\n", ccEvent)
@@ -111,11 +111,11 @@ func (b *BlockchainSession) Result() ([]model.Vote, error) {
 		return nil, fmt.Errorf("failed to query: %v", err)
 	}
 	var v []model.Vote
-    if err := json.Unmarshal(response.Payload, &v); err != nil {
-        return nil ,err
-    }
-    fmt.Print("result:")
-  	fmt.Println(response.Payload)
+	if err := json.Unmarshal(response.Payload, &v); err != nil {
+		return nil, err
+	}
+	fmt.Print("result:")
+	fmt.Println(string(response.Payload))
 	//return string(response.Payload), nil
 	return v, nil
 }

@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 	"github.com/ryomak/tsukemen/web/model"
@@ -11,11 +13,10 @@ type DBSession struct {
 }
 
 func NewDBSession() *DBSession {
-	db, err := gorm.Open("mysql", "root:password@tcp(localhost:3306)/votedb")
+	db, err := gorm.Open("mysql", "root:@tcp(localhost:3306)/votedb")
 	if err != nil {
-		panic("failed to connect database")
+		panic(err)
 	}
-	defer db.Close()
 	db.AutoMigrate(&model.Vote{})
 
 	return &DBSession{DB: db}
@@ -32,5 +33,6 @@ func (d *DBSession) Result() ([]model.Vote, error) {
 	if err := d.DB.Find(&result).Error; err != nil {
 		return nil, err
 	}
+	fmt.Println(result)
 	return result, nil
 }

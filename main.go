@@ -2,14 +2,14 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
-	"net/http"
 	"fmt"
+	"net/http"
+
+	"github.com/gorilla/mux"
 	"github.com/ryomak/tsukemen/web/blockchain"
 	"github.com/ryomak/tsukemen/web/db"
 	"github.com/ryomak/tsukemen/web/model"
 )
-
 
 type Server struct {
 	Store
@@ -47,7 +47,7 @@ func (s *Server) ResultHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 	w.Write(res)
 }
 
@@ -59,13 +59,13 @@ func main() {
 		blockchain.NewBlockchainSession(),
 	}
 	r := mux.NewRouter()
-	r.HandleFunc("/hello",func(w http.ResponseWriter, r *http.Request) {
-		  fmt.Fprintf(w, "Hello, World")
+	r.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Hello, World")
 	})
 	r.HandleFunc("/db/vote", databaseServer.VoteForCandidateHandler).Methods("POST")
-	r.HandleFunc("/db/result", databaseServer.VoteForCandidateHandler).Methods("GET")
+	r.HandleFunc("/db/result", databaseServer.ResultHandler).Methods("GET")
 	r.HandleFunc("/blockchain/vote", blockchainServer.VoteForCandidateHandler).Methods("POST")
-	r.HandleFunc("/blockchain/result", blockchainServer.VoteForCandidateHandler).Methods("GET")
+	r.HandleFunc("/blockchain/result", blockchainServer.ResultHandler).Methods("GET")
 	fmt.Println("run server port:8080")
 	http.ListenAndServe(":8080", r)
 }
