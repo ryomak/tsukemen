@@ -1,6 +1,6 @@
 package model
 
 type Vote struct {
-	User        string
-	CandidateID int
+	UserName      string `json:"user_name"`
+	CandidateName string `json:"candidate_name"`
 }

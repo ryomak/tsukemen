@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	"time"
 
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/channel"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/event"
@@ -75,32 +74,17 @@ func (b *BlockchainSession) VoteForCandidate(v model.Vote) error {
 	function := "createVote"
 	var args []string
 	args = append(args, "Vote"+strconv.Itoa(number))
-	args = append(args, v.User)
-	args = append(args, strconv.Itoa(v.CandidateID))
-
-	eventID := "voteForInvoke"
+	args = append(args, v.UserName)
+	args = append(args, v.CandidateName)
 
 	// Add data that will be visible in the proposal, like a description of the invoke request
 	transientDataMap := make(map[string][]byte)
 	transientDataMap["result"] = []byte("invoke vote")
 
-	reg, notifier, err := b.event.RegisterChaincodeEvent(b.ChainCodeID, eventID)
-	if err != nil {
-		return err
-	}
-	defer b.event.Unregister(reg)
-	response, err := b.client.Execute(channel.Request{ChaincodeID: b.ChainCodeID, Fcn: function, Args: [][]byte{[]byte(args[0]), []byte(args[1]), []byte(args[2])}, TransientMap: transientDataMap})
+	_, err := b.client.Execute(channel.Request{ChaincodeID: b.ChainCodeID, Fcn: function, Args: [][]byte{[]byte(args[0]), []byte(args[1]), []byte(args[2])}, TransientMap: transientDataMap})
 	if err != nil {
 		return fmt.Errorf("failed to move funds: %v", err)
 	}
-	// Wait for the result of the submission
-	select {
-	case ccEvent := <-notifier:
-		fmt.Printf("Received CC event: %v\n", ccEvent)
-	case <-time.After(time.Second * 20):
-		return fmt.Errorf("did NOT receive CC event for eventId(%s)", eventID)
-	}
-	fmt.Println(response)
 	return nil
 }
 func (b *BlockchainSession) Result() ([]model.Vote, error) {
@@ -114,8 +98,6 @@ func (b *BlockchainSession) Result() ([]model.Vote, error) {
 	if err := json.Unmarshal(response.Payload, &v); err != nil {
 		return nil, err
 	}
-	fmt.Print("result:")
-	fmt.Println(string(response.Payload))
 	//return string(response.Payload), nil
 	return v, nil
 }

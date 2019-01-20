@@ -12,8 +12,8 @@ import (
 
 //same as 	"github.com/ryomak/tsukemen/web/model"
 type Vote struct {
-	User        string `json:"user"`
-	CandidateID int    `json:"candidate_id`
+	UserName      string `json:"user_name"`
+	CandidateName string `json:"candidate_name"`
 }
 
 // HeroesServiceChaincode implementation of Chaincode
@@ -57,7 +57,7 @@ func (v *VoteChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 
 func (v *VoteChainCode) initVotes(stub shim.ChaincodeStubInterface) pb.Response {
 	votes := []Vote{
-		Vote{User: "user0", CandidateID: 0},
+		Vote{UserName: "user0", CandidateName: "candidate1"},
 	}
 
 	i := 0
@@ -77,20 +77,13 @@ func (v *VoteChainCode) createVote(stub shim.ChaincodeStubInterface, args []stri
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
-	id, _ := strconv.Atoi(args[2])
-	vote := Vote{User: args[1], CandidateID: id}
+	vote := Vote{UserName: args[1], CandidateName: args[2]}
 	voteAsBytes, _ := json.Marshal(vote)
 	err := stub.PutState(args[0], voteAsBytes)
 	if err != nil {
 		return shim.Error("Failed to update state of hello")
 	}
-
-	err = stub.SetEvent("voteForInvoke", []byte{})
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	return shim.Success(voteAsBytes)
+	return shim.Success(nil)
 }
 
 func (v *VoteChainCode) queryAllVotes(stub shim.ChaincodeStubInterface) pb.Response {
@@ -120,8 +113,6 @@ func (v *VoteChainCode) queryAllVotes(stub shim.ChaincodeStubInterface) pb.Respo
 		bArrayMemberAlreadyWritten = true
 	}
 	buffer.WriteString("]")
-
-	fmt.Printf("- queryAllVotes:\n%s\n", buffer.String())
 
 	return shim.Success(buffer.Bytes())
 }
