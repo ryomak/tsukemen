@@ -25,7 +25,7 @@ env-down:
 ##### RUN
 run:
 	@echo "Start app ..."
-	@./main
+	@./tsukemen
 
 ##### CLEAN
 clean: env-down

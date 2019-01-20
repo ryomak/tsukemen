@@ -100,7 +100,6 @@ func (v *VoteChainCode) createVote(stub shim.ChaincodeStubInterface, args []stri
 		return shim.Error("Failed to update state of hello")
 	}
 
-	
 	err = stub.SetEvent("voteForInvoke", []byte{})
 	if err != nil {
 		return shim.Error(err.Error())
