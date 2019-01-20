@@ -89,7 +89,7 @@ func (b *BlockchainSession) VoteForCandidate(v model.Vote) error {
 		return err
 	}
 	defer b.event.Unregister(reg)
-	response, err := b.client.Execute(channel.Request{ChaincodeID: b.ChainCodeID, Fcn: function, Args: [][]byte{[]byte(args[1]), []byte(args[2]), []byte(args[2])}, TransientMap: transientDataMap})
+	response, err := b.client.Execute(channel.Request{ChaincodeID: b.ChainCodeID, Fcn: function, Args: [][]byte{[]byte(args[0]), []byte(args[1]), []byte(args[2])}, TransientMap: transientDataMap})
 	if err != nil {
 		return fmt.Errorf("failed to move funds: %v", err)
 	}
