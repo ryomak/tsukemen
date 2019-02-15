@@ -54,11 +54,10 @@ func (setup *BlockchainSession) Initialize() error {
 	}
 	req := resmgmt.SaveChannelRequest{ChannelID: setup.ChannelID, ChannelConfigPath: setup.ChannelConfig, SigningIdentities: []msp.SigningIdentity{adminIdentity}}
 	txID, err := setup.admin.SaveChannel(req, resmgmt.WithOrdererEndpoint(setup.OrdererID))
-	if err != nil || txID.TransactionID == "" {
-
+  if err != nil || txID.TransactionID == "" {
     fmt.Println("rep")
     return err
-	}
+  }
 	fmt.Println("Channel created")
 
 	// Make admin user join the previously created channel
@@ -109,7 +108,7 @@ func (setup *BlockchainSession) InstallAndInstantiateCC() error {
 	// Creation of the client which will enables access to our channel events
 	setup.event, err = event.New(clientContext)
 	if err != nil {
-    	return err
+	  return err
 	}
 	fmt.Println("Event client created")
 
