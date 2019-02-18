@@ -37,11 +37,9 @@ func (v *VoteChainCode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 }
 
 // Invoke
-// All future requests named invoke will arrive here.
 func (v *VoteChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	fmt.Println("########### HeroesServiceChaincode Invoke ###########")
 
-	// Get the function and arguments from the request
 	function, args := stub.GetFunctionAndParameters()
 
 	if function == "initVotes" {
@@ -51,7 +49,6 @@ func (v *VoteChainCode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	} else if function == "queryAllVotes" {
 		return v.queryAllVotes(stub)
 	}
-	// If the arguments given don’t match any function, we return an error
 	return shim.Error("Invalid Smart Contract function name")
 }
 
